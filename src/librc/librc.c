@@ -138,7 +138,7 @@ rm_dir(int targetfd, const char *pathname, bool top)
 	if (!(dp = do_opendirat(targetfd, pathname)))
 		return false;
 
-	while (!(d = readdir(dp))) {
+	while ((d = readdir(dp))) {
 		if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
 			continue;
 		if (fstatat(dirfd(dp), pathname, &s, 0) != 0) {
@@ -638,8 +638,11 @@ rc_set_user(void)
 	rc_dirs.scriptdirs[SCRIPTDIR_SVC] = rc_dirs.svcdir;
 
 	for (size_t i = 0; i < RC_DIR_MAX; i++) {
-		if (dirfds[i] == -1)
+		/* dirfd is zero-initialized, though zero is a valid
+		 * FD, dirfd should never contain FDs which are <= 2. */
+		if (dirfds[i] <= 0)
 			continue;
+
 		close(dirfds[i]);
 		dirfds[i] = -1;
 	}
