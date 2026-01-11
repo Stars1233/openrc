@@ -379,7 +379,7 @@ svc_exec(const char *command)
 			fcntl(slave_tty, F_SETFD, flags | FD_CLOEXEC);
 
 		if ((errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDOUT_FILENO))
-				|| (errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDOUT_FILENO)))
+				|| (errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDERR_FILENO)))
 			eerrorx("%s: posix_spawn_file_actions_adddup2: %s", applet, strerror(errno));
 	}
 
