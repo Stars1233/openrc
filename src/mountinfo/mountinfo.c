@@ -484,6 +484,8 @@ static void fuser_run(struct run_queue *rp, const char *fuser_opt)
 static int fuser_decide(struct run_queue *rp,
 	const char *fuser_opt, const char *fuser_kill_prefix)
 {
+	static bool has_rc_pid = false;
+	static char *rc_pid;
 	char buf[1<<12];
 	char selfpid[64];
 	int read_maybe_truncated;
@@ -505,7 +507,12 @@ static int fuser_decide(struct run_queue *rp,
 	buf[n+2] = '\0';
 	snprintf(selfpid, sizeof selfpid, " %lld ", (long long)getpid());
 
-	if (strstr(buf, selfpid)) {
+	if (!has_rc_pid) {
+		rc_pid = getenv("RC_PID");
+		has_rc_pid = true;
+	}
+
+	if (strstr(buf, selfpid) || (rc_pid && strstr(buf, rc_pid))) {
 		/* lets not kill ourselves */
 		eerror("Unmounting %s failed because we are using it", rp->mntpath);
 		return -1;
